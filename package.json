@@ -1,6 +1,6 @@
 {
   "name": "const-module-loader",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Zeb Piasecki <zeb@zebulon.dev>",
   "repository": "https://github.com/zebp/const-module-loader",
   "type": "module",
@@ -11,7 +11,8 @@
     "format": "biome format ./src --write",
     "check:lint": "biome lint ./src",
     "check:format": "biome format ./src",
-    "test": "vitest"
+    "test": "vitest",
+    "foo": "node foo.js"
   },
   "keywords": [
     "webpack",
@@ -20,10 +21,12 @@
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "^1.5.3",
+    "@types/node": "^20.11.25",
+    "tsx": "^4.7.1",
     "typescript": "^5.3.3",
     "vitest": "^1.3.1"
   },
   "dependencies": {
-    "const-module": "^0.1.1"
+    "const-module": "^0.2.0"
   }
 }

@@ -1,10 +1,41 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import { default as loader } from "./index.js";
+import * as os from "node:os";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+
+interface TmpDirFixture {
+  tmpdir: string;
+}
+
+async function createTempDir() {
+  const ostmpdir = os.tmpdir();
+  const tmpdir = path.join(ostmpdir, "unit-test-");
+  return await fs.mkdtemp(tmpdir);
+}
+
+export const tmpdirTest = test.extend<TmpDirFixture>({
+  // biome-ignore lint/correctness/noEmptyPattern: <explanation>
+  tmpdir: async ({}, use) => {
+    const directory = await createTempDir();
+
+    await use(directory);
+
+    await fs.rm(directory, { recursive: true });
+  },
+});
+
+export async function newTmpFile(tmpdir: string, content: string) {
+  const filename = path.join(tmpdir, "file.mts");
+  await fs.writeFile(filename, content);
+  return filename;
+}
 
 const invokeLoader = (input: string) =>
   new Promise<string>((resolve, reject) => {
     const loaderInterface = {
+      resourcePath: input,
       async() {
         return (err: unknown | null, contents: string) => {
           if (err) {
@@ -21,8 +52,12 @@ const invokeLoader = (input: string) =>
   });
 
 describe("loader", () => {
-  it("should build without errors", async () => {
-    const output = await invokeLoader("export const foo: number = 5 + 5;");
+  tmpdirTest("should build without errors", async ({ tmpdir }) => {
+    const filename = await newTmpFile(
+      tmpdir,
+      "export const foo: number = 5 + 5;",
+    );
+    const output = await invokeLoader(filename);
     expect(output).toMatchInlineSnapshot(`
       "function deserialize(value) {
           switch (value.__const_type) {
